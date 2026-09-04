@@ -13,11 +13,11 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Set up Java 17
+      - name: Set up Java 21
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: '17'
+          java-version: '21'
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -26,11 +26,11 @@ jobs:
 
       - name: Build Android App
         run: |
-          mkdir www
-          cp index.html www/
+          mkdir -p www
+          cp index.html www/index.html
           npm init -y
           npm install @capacitor/core @capacitor/cli @capacitor/android
-          npx cap init "حساب المحل" "com.shop.ledger" --web-dir www
+          npx cap init "ShopLedger" "com.shop.ledger" --web-dir www
           npx cap add android
           cd android
           chmod +x gradlew
