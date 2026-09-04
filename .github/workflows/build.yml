@@ -32,9 +32,23 @@ jobs:
           npm install @capacitor/core @capacitor/cli @capacitor/android
           npx cap init "ShopLedger" "com.shop.ledger" --web-dir www
           npx cap add android
+
+          # فرض توحيد إصدارات كوتلن لمنع تعارض الحزم
+          cat << 'EOF' >> android/build.gradle
+          allprojects {
+              configurations.all {
+                  resolutionStrategy {
+                      force "org.jetbrains.kotlin:kotlin-stdlib:1.8.22"
+                      force "org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.22"
+                      force "org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.22"
+                  }
+              }
+          }
+          EOF
+
           cd android
           chmod +x gradlew
-          ./gradlew assembleDebug
+          ./gradlew assembleDebug --stacktrace
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
