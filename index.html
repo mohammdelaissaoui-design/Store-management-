@@ -151,6 +151,237 @@
         .details-summary b { font-size: 11pt; color: var(--text-main); }
         
         .history-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; max-height: 150px; overflow-y: auto; padding-right: 4px; }
+        .history-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; background: rgba(255,255,200,0.03); border-radius: 8px; font-size: 10pt; }
+        .history-date { font-size: 8pt; color: var(--text-muted); margin-top: 3px; }
+        
+        .quick-actions-container { display: flex; flex-direction: column; gap: 10px; background: var(--bg-color); padding: 12px; border-radius: 10px; border: 1px solid var(--border-color); }
+        .quick-inputs-row { display: flex; gap: 8px; }
+        .action-buttons-row { display: flex; gap: 8px; }
+        .btn-quick { flex: 1; border: none; padding: 10px; border-radius: 8px; font-weight: bold; cursor: pointer; color: white; font-size: 10pt; }
+        .btn-quick.pay { background-color: var(--accent-green); }
+        .btn-quick.borrow { background-color: var(--accent-orange); }
+
+        .auth-container { background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 20px; padding: 24px; max-width: 380px; margin: 30px auto; text-align: center; box-shadow: var(--shadow); }
+        .auth-tabs { display: flex; margin-bottom: 16px; border-bottom: 1px solid var(--border-color); }
+        .auth-tab { flex: 1; padding: 10px 4px; background: none; border: none; color: var(--text-muted); font-weight: bold; cursor: pointer; font-size: 10pt; }
+        .auth-tab.active { color: var(--accent-blue); border-bottom: 3px solid var(--accent-blue); }
+        .auth-screen { display: none; }
+        .auth-screen.active { display: block; }
+        .form-group { margin-bottom: 14px; text-align: right; }
+        .form-group label { display: block; font-size: 10pt; color: var(--text-muted); margin-bottom: 4px; }
+        .form-control { width: 100%; background-color: var(--bg-color); border: 1px solid var(--border-color); border-radius: 8px; padding: 11px; color: var(--text-main); font-size: 11pt; outline: none; }
+        .form-control:focus { border-color: var(--accent-blue); }
+        textarea.form-control { resize: vertical; min-height: 80px; }
+        
+        .btn-submit { width: 100%; background-color: var(--accent-blue); color: white; border: none; padding: 12px; font-size: 11.5pt; font-weight: bold; border-radius: 8px; cursor: pointer; margin-top: 6px; }
+
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6); z-index: 3000; justify-content: center; align-items: center; padding: 12px; }
+        .modal-content { background-color: var(--card-bg); border-radius: 18px; width: 100%; max-width: 400px; padding: 18px; border: 1px solid var(--border-color); max-height: 90vh; overflow-y: auto; color: var(--text-main); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; }
+        .btn-delete-item { background: none; border: none; color: var(--danger); font-size: 14pt; cursor: pointer; font-weight: bold; }
+        .btn-edit-item { background: none; border: none; color: var(--accent-blue); font-size: 14pt; cursor: pointer; font-weight: bold; }
+        
+        .manage-list { max-height: 200px; overflow-y: auto; margin-top: 10px; }
+        .manage-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 8px; border-bottom: 1px solid var(--border-color); font-size: 10.5pt; }
+        .manage-actions { display: flex; gap: 10px; }
+        .checkbox-group { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
+        .checkbox-group input { width: 16px; height: 16px; cursor: pointer; }
+
+        .note-card { background-color: var(--bg-color); border: 1px solid var(--border-color); border-radius: 12px; padding: 12px; margin-bottom: 10px; cursor: pointer; transition: all 0.2s; }
+        .note-card-title { font-weight: bold; color: var(--text-main); font-size: 11pt; margin-bottom: 4px; }
+        .note-card-date { font-size: 8pt; color: var(--text-muted); margin-bottom: 6px; }
+        .note-card-excerpt { font-size: 9.5pt; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        
+        .box-phone-entry { background-color: var(--bg-color); padding: 10px; border-radius: 8px; margin-bottom: 10px; border: 1px solid var(--border-color); }
+        .box-debt-entry { background-color: rgba(239, 68, 68, 0.08); padding: 10px; border-radius: 8px; margin-bottom: 10px; border: 1px solid rgba(239, 68, 68, 0.3); }
+
+        body.worker-mode .admin-only { display: none !important; }
+    </style>
+</head>
+<body>
+
+    <div class="app-header">
+        <button class="icon-btn" onclick="window.toggleTheme()" id="theme-toggle-btn">🌙</button>
+        <div class="header-title" id="main-header-title">حساب المحل</div>
+        <div class="header-icons">
+            <span id="auth-status-dot" style="width: 8px; height: 8px; background-color: var(--danger); border-radius: 50%;" title="حالة الاتصال"></span>
+            <div id="logged-user-widget" class="widget-avatar-container" onclick="window.toggleGoogleMenu()">
+                <div id="widget-avatar">M</div>
+            </div>
+        </div>
+
+        <div id="google-profile-menu" class="google-profile-menu">
+            <div class="profile-email" id="menu-user-email">loading...</div>
+            <div class="avatar-container admin-only" onclick="document.getElementById('avatar-file-input').click()" style="cursor: pointer;" title="اضغط لتغيير الصورة">
+                <div id="menu-avatar" class="user-avatar-large">M</div>
+                <input type="file" id="avatar-file-input" accept="image/*" style="display: none;" onchange="window.uploadAvatar(event)">
+                <div style="position: absolute; bottom: 0; background: rgba(0,0,0,0.6); width: 100%; font-size: 8pt; color: #fff; border-radius: 0 0 50% 50%; padding: 2px 0;">تعديل</div>
+            </div>
+            <div class="profile-name" id="menu-user-name" style="margin-bottom: 10px; font-weight: bold;">المحل التجاري</div>
+            
+            <div class="admin-only" onclick="window.changeShopNamePrompt()" style="cursor: pointer; color: var(--accent-blue); font-size: 9.5pt; font-weight: bold; margin-bottom: 10px;">
+                ✏️ تعديل اسم المحل
+            </div>
+
+            <hr class="admin-only" style="border: 0; border-top: 1px solid var(--border-color); margin: 10px 0;">
+            <div class="admin-only" onclick="window.openWorkerCodeModal()" style="cursor: pointer; color: #a855f7; font-size: 10pt; font-weight: bold; padding: 6px 0;">
+                🔑 توليد كود لعامل جديد
+            </div>
+
+            <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 10px 0 15px 0;">
+            <button class="google-logout-btn" style="background: none; border: none; color: #ef4444; cursor: pointer; font-size: 10.5pt; font-weight: bold; width: 100%; padding: 10px;" onclick="window.handleLogout()">
+                تسجيل الخروج 🚪
+            </button>
+        </div>
+    </div>
+
+    <!-- نافذة تسجيل الدخول -->
+    <div id="auth-flow-container" class="auth-container">
+        <div class="auth-tabs">
+            <button id="tab-login" class="auth-tab active" onclick="window.switchAuthTab('login')">دخول المدير</button>
+            <button id="tab-register" class="auth-tab" onclick="window.switchAuthTab('register')">حساب جديد</button>
+            <button id="tab-worker" class="auth-tab" onclick="window.switchAuthTab('worker')" style="color:var(--accent-purple);">دخول العامل</button>
+        </div>
+        
+        <!-- دخول المدير -->
+        <div id="screen-login" class="auth-screen active">
+            <form id="login-form">
+                <div class="form-group"><label>الإيميل (صاحب المحل):</label><input type="email" id="login-email" class="form-control" required placeholder="name@gmail.com"></div>
+                <div class="form-group"><label>كلمة السر:</label><input type="password" id="login-password" class="form-control" required placeholder="••••••••"></div>
+                <div style="text-align: left; margin-bottom: 12px;">
+                    <a href="javascript:void(0)" onclick="window.openModal('reset-password-modal')" style="font-size: 9.5pt; color: var(--accent-blue); text-decoration: none; font-weight: bold;">نسيت كلمة السر؟</a>
+                </div>
+                <button type="submit" class="btn-submit" onclick="window.handleLogin(event)">دخول كمدير</button>
+            </form>
+            
+            <!-- زر الدخول المباشر بنافذة داخلية بدون تحويل إلى Chrome -->
+            <div style="margin-top: 14px; border-top: 1px solid var(--border-color); padding-top: 12px;">
+                <button type="button" class="btn-submit" style="background-color: #db4437; display: flex; align-items: center; justify-content: center; gap: 8px;" onclick="window.handleGoogleLogin()">
+                    <span>🌐</span> تسجيل الدخول بحساب Gmail مباشرة
+                </button>
+            </div>
+        </div>
+        
+        <!-- تسجيل حساب جديد -->
+        <div id="screen-register" class="auth-screen">
+            <form id="register-form">
+                <div class="form-group"><label            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            padding: 12px;
+            padding-top: 20px;
+            transition: background-color 0.2s, color 0.2s;
+            font-size: 11pt;
+        }
+
+        .app-header {
+            display: flex; justify-content: space-between; align-items: center;
+            background-color: var(--card-bg); padding: 14px 16px;
+            border-radius: 16px; margin-bottom: 12px; box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+        }
+        .header-title { font-size: 14pt; font-weight: bold; }
+        .header-icons { display: flex; align-items: center; gap: 12px; }
+        .icon-btn { background: none; border: none; font-size: 15pt; cursor: pointer; color: var(--text-main); }
+
+        .archive-inline-tabs { display: flex; background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 10px; padding: 2px; margin-bottom: 12px; }
+        .archive-btn { flex: 1; background: none; border: none; color: var(--text-muted); font-size: 10pt; font-weight: bold; padding: 8px; border-radius: 8px; cursor: pointer; transition: all 0.2s; text-align: center; }
+        .archive-btn.active { background-color: var(--accent-green); color: white; }
+
+        .custom-date-container { margin-top: 10px; display: flex; flex-direction: column; gap: 4px; text-align: right; }
+        .custom-date-input { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); background-color: var(--bg-color); color: var(--text-main); font-size: 11pt; outline: none; font-weight: bold; }
+
+        .nav-tabs-top {
+            background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 14px;
+            display: flex; justify-content: space-between; padding: 6px 4px; margin-bottom: 14px; box-shadow: var(--shadow);
+        }
+        .nav-tab-btn { 
+            background: none; border: none; color: var(--text-muted); font-size: 10.5pt; font-weight: bold; cursor: pointer; 
+            display: flex; flex-direction: row; align-items: center; justify-content: center; gap: 4px;
+            padding: 10px 4px; border-radius: 10px; transition: all 0.2s; width: 32%;
+        }
+        .nav-tab-btn.active { color: var(--accent-blue); background-color: var(--bg-color); }
+
+        .widget-avatar-container { width: 44px; height: 44px; border-radius: 50%; cursor: pointer; display: none; align-items: center; justify-content: center; font-weight: bold; color: white; background-color: var(--accent-purple); overflow: hidden; border: 2px solid var(--card-bg); box-shadow: 0 0 0 2px var(--accent-blue); font-size: 14pt; }
+        .google-profile-menu { display: none; position: absolute; top: 70px; left: 12px; width: 290px; background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 24px; padding: 20px; box-shadow: 0 4px 16px rgba(0,0,0,0.4); z-index: 2000; text-align: center; color: var(--text-main); }
+        .google-profile-menu.show { display: block; }
+        .profile-email { color: var(--text-muted); font-size: 10pt; margin-bottom: 12px; word-break: break-all; }
+        .avatar-container { position: relative; width: 100px; height: 100px; margin: 0 auto 12px; }
+        .user-avatar-large { width: 100%; height: 100%; border-radius: 50%; background-color: #8b5cf6; color: white; font-size: 26pt; display: flex; align-items: center; justify-content: center; font-weight: bold; overflow: hidden; }
+
+        .dashboard-grid { display: block; width: 100%; margin-bottom: 12px; }
+        .grid-row { display: table; width: 100%; table-layout: fixed; border-spacing: 8px; margin-bottom: -8px; }
+        .main-card { display: table-cell; background-color: var(--card-bg); border-radius: 18px; padding: 14px; border: 1px solid var(--border-color); box-shadow: var(--shadow); vertical-align: top; height: 115px; position: relative; }
+
+        @media (max-width: 600px) {
+            .grid-row { border-spacing: 6px; }
+            .main-card { height: 105px; padding: 10px; }
+            .card-title { font-size: 10pt !important; }
+            .stat-value { font-size: 13.5pt !important; }
+            .card-sub-desc { font-size: 8.5pt !important; }
+        }
+
+        .card-title { font-size: 11pt; font-weight: bold; margin-bottom: 4px; color: var(--text-main); }
+        .stat-value { font-size: 16pt; font-weight: bold; margin-bottom: 2px; }
+        .card-sub-desc { font-size: 8.5pt; color: var(--text-muted); }
+        .chart-wrapper-line { height: 35px; width: 100%; margin-top: auto; }
+
+        .add-record-card { background-color: var(--card-bg); border-radius: 16px; border: 1px solid var(--border-color); padding: 16px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; box-shadow: var(--shadow); width: 100%; }
+        .add-btn-circle { width: 40px; height: 40px; background-color: #e2e8f0; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18pt; font-weight: bold; color: #1e293b; }
+        
+        #history-container { max-height: 330px; overflow-y: auto; padding-right: 2px; margin-top: 8px; }
+        .operation-row { background-color: var(--bg-color); border-radius: 12px; padding: 10px 12px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; border: 1px solid var(--border-color); }
+        .operation-details { display: flex; flex-direction: column; gap: 2px; }
+        .operation-meta { font-size: 8.5pt; color: var(--text-muted); margin-top: 1px; }
+        .operation-actions { display: flex; align-items: center; gap: 10px; }
+        .report-table { width: 100%; border-collapse: collapse; margin-top: 6px; font-size: 10pt; text-align: center; }
+        .report-table th { color: var(--text-muted); padding: 8px; border-bottom: 1px solid var(--border-color); }
+        .report-table td { padding: 10px 8px; border-bottom: 1px solid var(--border-color); color: var(--text-main); }
+        .app-section { display: none; }
+        .app-section.active { display: block; }
+
+        /* -- الكريدي -- */
+        .stats-bar { display: flex; background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 14px; margin-bottom: 16px; box-shadow: var(--shadow); flex-direction: column; gap: 12px; }
+        .stat-item { flex: 1; }
+        .stat-title { font-size: 9pt; color: var(--text-muted); margin-bottom: 4px; font-weight: bold; }
+        
+        .controls-row { display: flex; gap: 10px; margin-bottom: 16px; }
+        .search-input { flex: 1; background-color: var(--card-bg); border: 1px solid var(--border-color); color: var(--text-main); padding: 12px; border-radius: 10px; outline: none; }
+        .btn-add-main { background-color: var(--accent-blue); color: white; border: none; padding: 0 16px; border-radius: 10px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 6px; }
+
+        .debt-list { display: flex; flex-direction: column; gap: 10px; }
+        .debt-card { background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 12px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: background-color 0.2s; }
+        .debt-card:active { background-color: var(--border-color); }
+        .debt-card.customer-debt { border-right: 4px solid var(--accent-green); }
+        .debt-card.shop-debt { border-right: 4px solid var(--danger); }
+        
+        .debt-info-left { display: flex; align-items: center; gap: 10px; }
+        .debt-icon { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14pt; font-weight: bold; }
+        .customer-debt .debt-icon { background-color: rgba(16, 185, 129, 0.1); color: var(--accent-green); }
+        .shop-debt .debt-icon { background-color: rgba(239, 68, 68, 0.1); color: var(--danger); }
+        
+        .debt-name-title { font-weight: bold; font-size: 11pt; color: var(--text-main); }
+        .debt-sub { font-size: 8.5pt; color: var(--text-muted); margin-top: 4px; }
+        .phone-link { color: var(--accent-blue); text-decoration: none; font-weight: bold; pointer-events: auto; }
+        
+        .debt-amounts { text-align: left; }
+        .debt-remaining { font-size: 12pt; font-weight: bold; }
+        .customer-debt .debt-remaining { color: var(--accent-green); }
+        .shop-debt .debt-remaining { color: var(--danger); }
+
+        .action-btns { display: flex; flex-direction: column; gap: 6px; margin-left: 6px; }
+        .btn-action { background: none; border: none; font-size: 12pt; cursor: pointer; width: 28px; height: 28px; border-radius: 6px; background-color: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center; }
+
+        .details-summary { display: flex; justify-content: space-between; background: var(--bg-color); padding: 12px; border-radius: 10px; margin-bottom: 16px; border: 1px solid var(--border-color); text-align: center; }
+        .details-summary div { flex: 1; }
+        .details-summary span { display: block; font-size: 8.5pt; color: var(--text-muted); }
+        .details-summary b { font-size: 11pt; color: var(--text-main); }
+        
+        .history-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; max-height: 150px; overflow-y: auto; padding-right: 4px; }
         .history-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; background: rgba(255,255,255,0.03); border-radius: 8px; font-size: 10pt; }
         .history-date { font-size: 8pt; color: var(--text-muted); margin-top: 3px; }
         
